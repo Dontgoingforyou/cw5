@@ -11,7 +11,7 @@ class HeadHunterAPI(GetCompaniesAPI):
         self.headers = {"User-Agent": "HH-User-Agent"}
         self.params = {"text": "", "per_page": 10, "only_with_vacancies": True}
 
-    def load_companies(self, keyword: str):
+    def load_data(self, keyword: str):
         self.params["text"] = keyword
         get_response = requests.get(self.url, headers=self.headers, params=self.params)
-        return get_response.json()["items"]
+        return get_response.json()["items"]["employer"]

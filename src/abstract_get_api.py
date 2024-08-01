@@ -5,5 +5,6 @@ class GetCompaniesAPI(ABC):
     """Абстрактный класс для получения вакансии с hh.ru"""
 
     @abstractmethod
-    def load_companies(self, keyword):
+    def load_data(self, keyword):
         pass
+
