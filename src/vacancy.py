@@ -9,8 +9,8 @@ class Vacancy:
 
         self.name: str = name
         self.alternate_url: str = alternate_url
-        self.salary_from: int = salary_from
-        self.salary_to: int = salary_to
+        self.salary_from: int = salary_from or 0
+        self.salary_to: int = salary_to or 0
         self.area_name: str = area_name
         self.requirement: str = requirement
         self.responsibility: str = responsibility
@@ -26,10 +26,10 @@ class Vacancy:
                 f"{self.responsibility}\n")
 
     @classmethod
-    def from_hh_dict(cls, vacancy_data: dict):
+    def from_hh_cls(cls, vacancy_data: dict):
         """ Метод возвращает экземпляр класса в виде списка """
 
-        salary = vacancy_data.get("salary")
+        salary = vacancy_data.get("salary", {})
 
         return cls(
             vacancy_data["name"],
@@ -37,19 +37,6 @@ class Vacancy:
             salary.get("from") if salary.get("from") else 0,
             salary.get("to") if salary.get("to") else 0,
             vacancy_data["area"]["name"],
-            vacancy_data["snippet"]["requirement"],
-            vacancy_data["snippet"]["responsibility"],
+            vacancy_data["snippet"].get("requirement", "Нет данных о требованиях"),
+            vacancy_data["snippet"].get("responsibility", "Нет данных об обязанностях"),
         )
-
-    def to_dict(self) -> dict:
-        """ Метод возвращает вакансию в виде словаря """
-
-        return {
-            "name": self.name,
-            "alternate_url": self.alternate_url,
-            "salary_from": self.salary_from,
-            "salary_to": self.salary_to,
-            "area_name": self.area_name,
-            "requirement": self.requirement,
-            "responsibility": self.responsibility,
-        }

@@ -14,4 +14,6 @@ class HeadHunterAPI(GetCompaniesAPI):
     def load_data(self, keyword: str):
         self.params["text"] = keyword
         get_response = requests.get(self.url, headers=self.headers, params=self.params)
-        return get_response.json()["items"]["employer"]
+        if get_response.status_code != 200:
+            raise Exception(f"Ошибка: {get_response.status_code}")
+        return get_response.json().get("items", [])

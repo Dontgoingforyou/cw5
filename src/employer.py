@@ -6,7 +6,7 @@ class Employer:
     def __init__(self, employer_id, name, url, alternate_url, vacancies_url):
         """ Конструктор класса """
 
-        self.employer_id: str = employer_id
+        self.employer_id: int = employer_id
         self.name: str = name
         self.url: str = url
         self.alternate_url: str = alternate_url
@@ -26,15 +26,9 @@ class Employer:
         """ Метод возвращает экземпляр класса """
 
         return cls(
-            employer_data["id"],
-            employer_data["name"],
-            employer_data["url"],
-            employer_data["alternate_url"],
-            employer_data["vacancies_url"],
+            employer_data.get("id"),
+            employer_data.get("name"),
+            employer_data.get("url"),
+            employer_data.get("alternate_url"),
+            employer_data.get("vacancies_url", "No data")
         )
-
-
-# emp = Employer("UNION SPACE GROUP (HAYFIL CONSALTING)", "https://api.hh.ru/employers/1862997",
-#                "https://hh.ru/employer/1862997", "https://api.hh.ru/vacancies?employer_id=1862997")
-#
-# print(emp)

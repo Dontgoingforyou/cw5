@@ -1,17 +1,16 @@
 import requests
 
 from src.abstract_get_api import GetCompaniesAPI
-from src.employer import Employer
 
 
-class HeadHunterCompany(GetCompaniesAPI):
+class HeadHunterVacancy(GetCompaniesAPI):
     """ Класс для подключения к API вакансии работодателя """
 
-    def __init__(self):
-        self.id_employer = Employer.employer_id
-        self.url = f"https://api.hh.ru/vacancies?employer_id={self.id_employer}"
-        self.headers = {"User-Agent": "HH-User-Agent"}
+    def __init__(self, employer_id):
+        self.id_employer = employer_id
 
     def load_data(self, keyword):
-        get_response = requests.get(self.url, headers=self.headers)
-        return get_response.json()["items"]
+        response = requests.get(f"https://api.hh.ru/vacancies?employer_id={self.id_employer}")
+        if response.status_code == 200:
+            return response.json().get("items", [])
+        return []
