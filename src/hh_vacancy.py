@@ -8,9 +8,13 @@ class HeadHunterVacancy(GetCompaniesAPI):
 
     def __init__(self, employer_id):
         self.id_employer = employer_id
+        self.__url = f"https://api.hh.ru/vacancies?employer_id={self.id_employer}"
+        self.headers = {"User-Agent": "HH-User-Agent"}
 
-    def load_data(self, keyword):
-        response = requests.get(f"https://api.hh.ru/vacancies?employer_id={self.id_employer}")
-        if response.status_code == 200:
-            return response.json().get("items", [])
-        return []
+    def load_user_choice(self, keyword):
+        pass
+
+    def load_data(self):
+        get_response = requests.get(self.__url, headers=self.headers)
+        data = get_response.json()['items']
+        return data

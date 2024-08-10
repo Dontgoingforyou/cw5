@@ -1,5 +1,5 @@
 
-class Vacancy:
+class Vacancy:  # todo сделать валидацию данных
     """ Класс для работы с вакансиями """
 
     __slots__ = ("name", "alternate_url", "salary_from", "salary_to", "area_name", "requirement", "responsibility")
@@ -9,8 +9,8 @@ class Vacancy:
 
         self.name: str = name
         self.alternate_url: str = alternate_url
-        self.salary_from: int = salary_from or 0
-        self.salary_to: int = salary_to or 0
+        self.salary_from: int = salary_from
+        self.salary_to: int = salary_to
         self.area_name: str = area_name
         self.requirement: str = requirement
         self.responsibility: str = responsibility
@@ -26,17 +26,20 @@ class Vacancy:
                 f"{self.responsibility}\n")
 
     @classmethod
-    def from_hh_cls(cls, vacancy_data: dict):
-        """ Метод возвращает экземпляр класса в виде списка """
+    def from_vacancy_cls(cls, vacancy_data: dict):
+        """ Метод возвращает экземпляр класса в виде словаря """
 
-        salary = vacancy_data.get("salary", {})
-
-        return cls(
-            vacancy_data["name"],
-            vacancy_data["alternate_url"],
-            salary.get("from") if salary.get("from") else 0,
-            salary.get("to") if salary.get("to") else 0,
-            vacancy_data["area"]["name"],
-            vacancy_data["snippet"].get("requirement", "Нет данных о требованиях"),
-            vacancy_data["snippet"].get("responsibility", "Нет данных об обязанностях"),
-        )
+        if isinstance(vacancy_data, dict):
+            salary = vacancy_data.get("salary")
+            return cls(
+                vacancy_data["name"],
+                vacancy_data["alternate_url"],
+                salary.get("from") if salary.get("from") else 0,
+                salary.get("to") if salary.get("to") else 0,
+                vacancy_data["area"]["name"],
+                vacancy_data["snippet"].get("requirement", "Нет данных о требованиях"),
+                vacancy_data["snippet"].get("responsibility", "Нет данных об обязанностях"),
+            )
+        else:
+            print("Ошибка: данные компании должны быть словарем")
+            return None

@@ -1,14 +1,13 @@
 class Company:
     """ Класс для работы с компанией """
 
-    __slots__ = ("description", "site_url", "industries_name", "open_vacancies")
+    __slots__ = ("description", "site_url", "open_vacancies")
 
-    def __init__(self, description, site_url, industries_name, open_vacancies):
+    def __init__(self, description, site_url, open_vacancies):
         """ Конструктор класса """
 
         self.description: str = description
         self.site_url: str = site_url
-        self.industries_name: str = industries_name
         self.open_vacancies: int = open_vacancies
 
     def __str__(self):
@@ -16,8 +15,7 @@ class Company:
 
         return (f"Описание компании: {self.description}\n"
                 f"URL-адрес компании: {self.site_url}\n"
-                f"Отрасль: {self.industries_name}\n"
-                f"Количество открытых вакансии: {self.open_vacancies}")
+                f"Количество открытых вакансии: {self.open_vacancies}\n")
 
     @classmethod
     def from_company_cls(cls, company_data):
@@ -25,10 +23,9 @@ class Company:
 
         if isinstance(company_data, dict):
             return cls(
-                company_data["description"],
-                company_data["site_url"],
-                company_data["industries"]["name"],
-                company_data["open_vacancies"],
+                company_data.get("description", "Нет описания"),
+                company_data.get("site_url", "Нет URL"),
+                company_data.get("open_vacancies", 0),
             )
         else:
             print("Ошибка: данные компании должны быть словарем")

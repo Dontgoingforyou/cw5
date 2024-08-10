@@ -8,10 +8,13 @@ class HeadHunterCompany(GetCompaniesAPI):
 
     def __init__(self, employer_id):
         self.id_employer = employer_id
-        self.url = f"https://api.hh.ru/employers/{self.id_employer}"
+        self.__url = f"https://api.hh.ru/employers/{self.id_employer}"  # todo сделать приватным во всех классах
         self.headers = {"User-Agent": "HH-User-Agent"}
 
-    def load_data(self, keyword):
-        get_response = requests.get(self.url, headers=self.headers)
+    def load_user_choice(self, keyword):
+        pass
+
+    def load_data(self):
+        get_response = requests.get(self.__url, headers=self.headers)
         data = get_response.json()
         return data

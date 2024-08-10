@@ -1,3 +1,5 @@
+import psycopg2
+
 from src.company import Company
 from src.employer import Employer
 from src.hh_api import HeadHunterAPI
@@ -12,33 +14,46 @@ def user_choice_employer():
     keyword = input("Введите интересующую вас профессию\n").lower()
 
     hh_api = HeadHunterAPI()
-    employers = hh_api.load_data(keyword)
-    employers = [Employer.from_employer_cls(employer) for employer in employers]
+    employers_data = hh_api.load_user_choice(keyword)
+    employers = [Employer.from_employer_cls(employer) for employer in employers_data]
 
     print("Вывод информации о работодателе: \n")
     for employer in employers:
         print(employer)
 
-    if employers:
-        employer_id = employers[0].employer_id
-        hh_comp = HeadHunterCompany(employer_id)
-        companies = hh_comp.load_data(keyword)
-        companies = [Company.from_company_cls(company) for company in companies]
+    companies_data = [HeadHunterCompany(employer['employer']['id']).load_data() for employer in employers_data]
+    print(type(companies_data))
+    companies = [Company.from_company_cls(company) for company in companies_data]
+    for company in companies:
+        print(company)
 
-        print("Вывод информации о компании: \n")
-        for company in companies:
-            print(company)
-
-        hh_vac = HeadHunterVacancy(employer_id)
-        vacancies = hh_vac.load_data(keyword)
-        vacancies = [Vacancy.from_hh_cls(vacancy) for vacancy in vacancies]
-
-        print("Вывод информации о вакансиях компании: \n")
-        for vacancy in vacancies:
-            print(vacancy)
-
-    else:
-        print("Работодатели не найдены.")
+    vacancy_data = [HeadHunterVacancy(employer['employer']['id']).load_data() for employer in employers_data]
+    print(type(vacancy_data))
+    vacancies = [Vacancy.from_vacancy_cls(vacancy) for vacancy in vacancy_data]
+    print(f"DEBUG {vacancies}")
+    for vacancy in vacancies:
+        print(vacancy)
 
 
 user_choice_employer()
+
+# def create_database(database_name: str, params: dict) -> None:
+#     """ Создание БД и таблиц для сохранения данных о компаниях и вакансиях """
+#
+#     conn = psycopg2.connect(dbname=database_name, **params)
+#     conn.autocommit = True
+#     cur = conn.cursor()
+#
+#     cur.execute(f"DROP DATABASE IF EXISTS {database_name}")
+#     cur.execute(f"CREATE DATABASE {database_name}")
+#
+#     cur.close()
+#     conn.close()
+#
+#     conn = psycopg2.connect(dbname=database_name, **params)
+#     with conn.cursor() as cur:
+#         cur.execute(
+#             """
+#
+#             """
+#         )
