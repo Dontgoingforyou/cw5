@@ -1,6 +1,8 @@
+import progressbar
 import psycopg2
-import itertools
 
+from config import config
+from src.DBManager import DBManager
 from src.company import Company
 from src.employer import Employer
 from src.hh_api import HeadHunterAPI
@@ -18,14 +20,27 @@ def user_choice_employer(database_name: str, params: dict) -> None:
     employers_data = hh_api.load_user_choice(keyword)
     employers = [Employer.from_employer_cls(employer) for employer in employers_data]
 
-    companies_data = [HeadHunterCompany(employer['employer']['id']).load_data() for employer in employers_data]
+    bar = progressbar.ProgressBar(maxval=len(employers_data))
+    bar.start()
+    companies_data = []
+    for i, employer in enumerate(employers_data):
+        companies_data.append(HeadHunterCompany(employer['employer']['id']).load_data())
+        bar.update(i + 1)
+    bar.finish()
     companies = [Company.from_company_cls(company) for company in companies_data]
 
-    vacancy_data = list(itertools.chain.from_iterable(
-        [HeadHunterVacancy(employer['employer']['id']).load_data() for employer in employers_data]))
+    bar = progressbar.ProgressBar(maxval=len(employers_data))
+    bar.start()
+    vacancy_data = []
+    for i, employer in enumerate(employers_data):
+        vacancy_data.extend(HeadHunterVacancy(employer['employer']['id']).load_data())
+        bar.update(i + 1)
+    bar.finish()
     vacancies = [Vacancy.from_vacancy_cls(vacancy) for vacancy in vacancy_data]
 
-    for employer in employers:
+    bar = progressbar.ProgressBar(maxval=len(employers))
+    bar.start()
+    for i, employer in enumerate(employers):
         employers_data = {
             "employer_id": employer.employer_id,
             "employer_name": employer.name,
@@ -34,16 +49,24 @@ def user_choice_employer(database_name: str, params: dict) -> None:
             "employer_vacancies_url": employer.vacancies_url
         }
         save_data_to_database('employers', employers_data, database_name, params)
+        bar.update(i + 1)
+    bar.finish()
 
-    for company in companies:
+    bar = progressbar.ProgressBar(maxval=len(companies))
+    bar.start()
+    for i, company in enumerate(companies):
         companies_data = {
             "company_description": company.description,
             "company_site_url": company.site_url,
             "open_vacancies": company.open_vacancies
         }
         save_data_to_database('companies', companies_data, database_name, params)
+        bar.update(i + 1)
+    bar.finish()
 
-    for vacancy in vacancies:
+    bar = progressbar.ProgressBar(maxval=len(vacancies))
+    bar.start()
+    for i, vacancy in enumerate(vacancies):
         vacancy_data = {
             "vacancy_name": vacancy.name,
             "alternate_url": vacancy.alternate_url,
@@ -55,8 +78,10 @@ def user_choice_employer(database_name: str, params: dict) -> None:
             "responsibility": vacancy.responsibility
         }
         save_data_to_database('vacancies', vacancy_data, database_name, params)
+        bar.update(i + 1)
+    bar.finish()
 
-    print(f"Вся информация сохранена в базу данных {database_name}")
+    print(f"Вся информация сохранена в базу данных {database_name}\n")
 
 
 def create_database(database_name: str, params: dict) -> None:
@@ -129,3 +154,49 @@ def save_data_to_database(table_name: str, data: dict, database_name: str, param
 
     cur.close()
     conn.close()
+
+
+def user_request():
+
+    params = config()
+    db_manager = DBManager("hh", params)
+
+    user_input = input("Выберите запрос:\n"
+                       "1 - Вывести список всех компаний и количество вакансии у каждой компании\n"
+                       "2 - Вывести список всех вакансии с указанием названия компании, названия вакансии и зарплаты "
+                       "и ссылки на вакансию\n"
+                       "3 - Вывести среднюю зарплату по вакансиям\n"
+                       "4 - Вывести список всех вакансии, у которых зарплата выше средней по всем вакансиям\n"
+                       "5 - Вывести список всех вакансии, в названии которых содержится запрашиваемое слово\n")
+
+    if user_input == "1":
+        companies_and_vacancies_count = db_manager.get_companies_and_vacancies_count()
+        print(f"Список всех компаний и количество вакансии у каждой компании:\n")
+        for i in companies_and_vacancies_count:
+            print(i)
+
+    elif user_input == "2":
+        all_vacancies = db_manager.get_all_vacancies()
+        print(f"Cписок всех вакансии с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию:"
+              f"\n")
+        for i in all_vacancies:
+            print(i)
+
+    elif user_input == "3":
+        avg_salary = db_manager.get_avg_salary()
+        print(f"Средняя зарплата по вакансиям: {avg_salary}\n")
+        for i in avg_salary:
+            print(i)
+
+    elif user_input == "4":
+        vacancies_with_higher_salary = db_manager.get_vacancies_with_higher_salary()
+        print(f"Список всех вакансии, у которых зарплата выше средней по всем вакансиям:\n")
+        for i in vacancies_with_higher_salary:
+            print(i)
+
+    elif user_input == "5":
+        user_choice = input("Введите ключевое слово\n")
+        vacancies_with_keyword = db_manager.get_vacancies_with_keyword(user_choice)
+        print(f"Список всех вакансии, в названии которых содержится запрашиваемое слово:\n")
+        for i in vacancies_with_keyword:
+            print(i)
