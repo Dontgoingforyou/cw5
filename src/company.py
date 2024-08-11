@@ -1,3 +1,6 @@
+from typing import Any
+
+
 class Company:
     """ Класс для работы с компанией """
 
@@ -10,7 +13,7 @@ class Company:
         self.site_url: str = site_url
         self.open_vacancies: int = open_vacancies
 
-    def __str__(self):
+    def __str__(self) -> str:
         """ Строковое представление данных о компании """
 
         return (f"Описание компании: {self.description}\n"
@@ -18,7 +21,7 @@ class Company:
                 f"Количество открытых вакансии: {self.open_vacancies}\n")
 
     @classmethod
-    def from_company_cls(cls, company_data):
+    def from_company_cls(cls, company_data: dict) -> Any:
         """ Метод возвращает экземпляр класса """
 
         if isinstance(company_data, dict):

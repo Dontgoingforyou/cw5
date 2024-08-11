@@ -1,3 +1,6 @@
+from typing import Any
+
+
 class Employer:
     """ Класс для работы с работодателем """
 
@@ -22,13 +25,17 @@ class Employer:
                 f"Ссылка на API открытые вакансии компаний: {self.vacancies_url}\n")
 
     @classmethod
-    def from_employer_cls(cls, employer_data: dict):
+    def from_employer_cls(cls, employer_data: dict) -> Any:
         """ Метод возвращает экземпляр класса """
 
-        return cls(
-            employer_data.get("id"),
-            employer_data.get("name"),
-            employer_data.get("url"),
-            employer_data.get("alternate_url"),
-            employer_data.get("employer").get("vacancies_url", "No data")
-        )
+        if isinstance(employer_data, dict):
+            return cls(
+                employer_data.get("id"),
+                employer_data.get("name"),
+                employer_data.get("url"),
+                employer_data.get("alternate_url"),
+                employer_data.get("employer").get("vacancies_url", "No data")
+            )
+        else:
+            print("Ошибка: данные компании должны быть словарем")
+            return None
