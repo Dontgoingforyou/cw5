@@ -1,5 +1,3 @@
-from typing import Any
-
 import psycopg2
 import itertools
 
@@ -102,7 +100,7 @@ def create_database(database_name: str, params: dict) -> None:
             """
             CREATE TABLE vacancies (
                 vacancy_name VARCHAR,
-                alternate_url TEXT REFERENCES employers(alternate_url),
+                alternate_url TEXT,
                 salary_from INTEGER,
                 salary_to INTEGER,
                 salary_currency VARCHAR,
