@@ -1,5 +1,4 @@
 from config import config
-from src.DBManager import DBManager
 from src.utils import create_database, user_choice_employer, user_request
 
 

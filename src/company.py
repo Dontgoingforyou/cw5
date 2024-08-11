@@ -33,4 +33,3 @@ class Company:
         else:
             print("Ошибка: данные компании должны быть словарем")
             return None
-

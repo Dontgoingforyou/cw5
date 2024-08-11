@@ -171,14 +171,14 @@ def user_request():
 
     if user_input == "1":
         companies_and_vacancies_count = db_manager.get_companies_and_vacancies_count()
-        print(f"Список всех компаний и количество вакансии у каждой компании:\n")
+        print("Список всех компаний и количество вакансии у каждой компании:\n")
         for i in companies_and_vacancies_count:
             print(i)
 
     elif user_input == "2":
         all_vacancies = db_manager.get_all_vacancies()
-        print(f"Cписок всех вакансии с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию:"
-              f"\n")
+        print("Cписок всех вакансии с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию:"
+              "\n")
         for i in all_vacancies:
             print(i)
 
@@ -190,13 +190,13 @@ def user_request():
 
     elif user_input == "4":
         vacancies_with_higher_salary = db_manager.get_vacancies_with_higher_salary()
-        print(f"Список всех вакансии, у которых зарплата выше средней по всем вакансиям:\n")
+        print("Список всех вакансии, у которых зарплата выше средней по всем вакансиям:\n")
         for i in vacancies_with_higher_salary:
             print(i)
 
     elif user_input == "5":
         user_choice = input("Введите ключевое слово\n")
         vacancies_with_keyword = db_manager.get_vacancies_with_keyword(user_choice)
-        print(f"Список всех вакансии, в названии которых содержится запрашиваемое слово:\n")
+        print("Список всех вакансии, в названии которых содержится запрашиваемое слово:\n")
         for i in vacancies_with_keyword:
             print(i)

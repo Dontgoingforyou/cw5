@@ -10,4 +10,3 @@ class GetCompaniesAPI(ABC):
 
     def load_data(self):
         pass
-
