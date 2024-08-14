@@ -5,12 +5,12 @@ class Vacancy:
     """ Класс для работы с вакансиями """
 
     __slots__ = (
-        "name", "alternate_url", "salary_from", "salary_to", "salary_currency", "area_name", "requirement",
-        "responsibility"
+        "name", "alternate_url", "salary_from", "salary_to", "salary_currency", "employer_id", "area_name",
+        "requirement", "responsibility"
     )
 
     def __init__(
-            self, name, alternate_url, salary_from, salary_to, salary_currency, area_name, requirement,
+            self, name, alternate_url, salary_from, salary_to, salary_currency, employer_id, area_name, requirement,
             responsibility
     ):
         """ Конструктор класса """
@@ -20,6 +20,7 @@ class Vacancy:
         self.salary_from: int = salary_from
         self.salary_to: int = salary_to
         self.salary_currency: str = salary_currency
+        self.employer_id = employer_id
         self.area_name: str = area_name
         self.requirement: str = requirement
         self.responsibility: str = responsibility
@@ -31,6 +32,7 @@ class Vacancy:
                 f"Ссылка на вакансию: {self.alternate_url}\n"
                 f"Зарплата: от {self.salary_from} до {self.salary_to}\n"
                 f"Валюта: {self.salary_currency}\n"
+                f"ID компании: {self.employer_id}"
                 f"Место работы: {self.area_name}\n"
                 f"Краткое описание: {self.requirement}\n"
                 f"{self.responsibility}\n")
@@ -52,6 +54,7 @@ class Vacancy:
                 salary_from,
                 salary_to,
                 salary_currency,
+                vacancy_data["employer"]["id"],
                 vacancy_data["area"]["name"],
                 vacancy_data["snippet"].get("requirement", "Нет данных о требованиях"),
                 vacancy_data["snippet"].get("responsibility", "Нет данных об обязанностях"),

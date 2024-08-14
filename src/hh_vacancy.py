@@ -22,4 +22,5 @@ class HeadHunterVacancy(GetCompaniesAPI):
 
         get_response = requests.get(self.__url, headers=self.headers)
         data = get_response.json()['items']
+
         return data

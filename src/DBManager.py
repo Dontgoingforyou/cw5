@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import psycopg2
 
 
@@ -14,10 +16,7 @@ class DBManager:
 
         self.cur.execute(
             """
-            SELECT c.company_site_url, COUNT(v.vacancy_name)
-            FROM companies c
-            LEFT JOIN vacancies v ON c.company_site_url = v.alternate_url
-            GROUP BY c.company_site_url;
+            SELECT company_name, open_vacancies FROM companies
             """
         )
         return self.cur.fetchall()
@@ -28,9 +27,8 @@ class DBManager:
 
         self.cur.execute(
             """
-            SELECT v.vacancy_name, v.salary_from, v.salary_to, v.alternate_url, c.company_site_url
-            FROM vacancies v
-            LEFT JOIN companies c ON c.company_site_url = v.alternate_url
+            SELECT c.company_name, v.vacancy_name, v.salary_from, v.salary_to, v.alternate_url
+            FROM companies c, vacancies v
             """
         )
         return self.cur.fetchall()
@@ -45,7 +43,10 @@ class DBManager:
             WHERE salary_from IS NOT NULL AND salary_to IS NOT NULL
             """
         )
-        return self.cur.fetchall()
+        result = self.cur.fetchone()
+        avg_salary = Decimal(result[0])
+        formatted_avg_salary = format(avg_salary, '.2f')
+        return formatted_avg_salary
 
     def get_vacancies_with_higher_salary(self):
         """ Метод получает список всех вакансии, у которых зарплата выше средней по всем вакансиям """
@@ -54,11 +55,10 @@ class DBManager:
 
         self.cur.execute(
             """
-            SELECT v.vacancy_name, v.salary_from, v.salary_to, v.alternate_url, c.company_site_url
+            SELECT v.vacancy_name, v.salary_from, v.salary_to, v.alternate_url
             FROM vacancies v
-            LEFT JOIN companies c ON c.company_site_url = v.alternate_url
             WHERE ((v.salary_from + v.salary_to) / 2) > %s
-            """, (avg_salary, )
+            """, (avg_salary,)
         )
         return self.cur.fetchall()
 
@@ -69,10 +69,9 @@ class DBManager:
 
         self.cur.execute(
             """
-            SELECT v.vacancy_name, v.salary_from, v.salary_to, v.alternate_url, c.company_site_url
+            SELECT v.vacancy_name, v.salary_from, v.salary_to, v.alternate_url
             FROM vacancies v
-            LEFT JOIN companies c ON c.company_site_url = v.alternate_url
             WHERE LOWER(v.vacancy_name) LIKE %s
-            """, (keyword, )
+            """, (keyword,)
         )
         return self.cur.fetchall()
