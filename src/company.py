@@ -4,11 +4,12 @@ from typing import Any
 class Company:
     """ Класс для работы с компанией """
 
-    __slots__ = ("name", "description", "site_url", "open_vacancies")
+    __slots__ = ("employer_id", "name", "description", "site_url", "open_vacancies")
 
-    def __init__(self, name, description, site_url, open_vacancies):
+    def __init__(self, employer_id, name, description, site_url, open_vacancies):
         """ Конструктор класса """
 
+        self.employer_id = employer_id
         self.name: str = name
         self.description: str = description
         self.site_url: str = site_url
@@ -17,7 +18,8 @@ class Company:
     def __str__(self) -> str:
         """ Строковое представление данных о компании """
 
-        return (f"Название компаний: {self.name}"
+        return (f"ID компании: {self.employer_id}\n"
+                f"Название компаний: {self.name}\n"
                 f"Описание компании: {self.description}\n"
                 f"URL-адрес компании: {self.site_url}\n"
                 f"Количество открытых вакансии: {self.open_vacancies}\n")
@@ -28,6 +30,7 @@ class Company:
 
         if isinstance(company_data, dict):
             return cls(
+                company_data.get("id"),
                 company_data.get("name"),
                 company_data.get("description", "Нет описания"),
                 company_data.get("site_url", "Нет URL"),
