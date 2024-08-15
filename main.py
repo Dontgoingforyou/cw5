@@ -1,14 +1,17 @@
 from config import config
-from src.utils import create_database, user_choice_employer, user_request
+from src.utils import create_database, user_request, get_and_save_company_data, get_and_save_vacancy_data
 
 
 def main():
     """ Запуск программы """
 
+    print("Началось получение и сохранение данных...")
+
     params = config()
 
     create_database("hh", params)
-    user_choice_employer("hh", params)
+    get_and_save_company_data("hh", params)
+    get_and_save_vacancy_data("hh", params)
     user_request()
 
     while True:

@@ -1,61 +1,41 @@
-import progressbar
 import psycopg2
+import progressbar
 
 from config import config
-from src.DBManager import DBManager
+from src.dbmanager import DBManager
 from src.company import Company
-from src.employer import Employer
-from src.hh_api import HeadHunterAPI
 from src.hh_company import HeadHunterCompany
 from src.hh_vacancy import HeadHunterVacancy
 from src.vacancy import Vacancy
 
+companies_ids = [9694561, 4219, 5919632, 5667343, 9301808, 774144, 10571093, 198614, 6062708, 4306]
 
-def user_choice_employer(database_name: str, params: dict) -> None:
-    """ Функция для работы с пользователем """
 
-    keyword = input("Введите интересующую вас профессию\n").lower()
+def get_and_save_company_data(database_name: str, params: dict):
+    """ Функция получает и сохраняет данные о компаниях с hh.ru в БД"""
 
-    hh_api = HeadHunterAPI()
-    employers_data = hh_api.load_user_choice(keyword)
-    employers = [Employer.from_employer_cls(employer) for employer in employers_data]
+    companies_list = []
 
-    bar = progressbar.ProgressBar(maxval=len(employers_data))
-    bar.start()
-    companies_data = []
-    for i, employer in enumerate(employers_data):
-        companies_data.append(HeadHunterCompany(employer['employer']['id']).load_data())
-        bar.update(i + 1)
-    bar.finish()
-    companies = [Company.from_company_cls(company) for company in companies_data]
-
-    bar = progressbar.ProgressBar(maxval=len(employers_data))
-    bar.start()
-    vacancy_data = []
-    for i, employer in enumerate(employers_data):
-        vacancy_data.extend(HeadHunterVacancy(employer['employer']['id']).load_data())
-        bar.update(i + 1)
-    bar.finish()
-    vacancies = [Vacancy.from_vacancy_cls(vacancy) for vacancy in vacancy_data]
-
-    bar = progressbar.ProgressBar(maxval=len(employers))
-    bar.start()
-    for i, employer in enumerate(employers):
-        employers_data = {
-            "employer_id": employer.employer_id,
-            "employer_name": employer.name,
-            "employer_url": employer.url,
-            "alternate_url": employer.alternate_url,
-            "employer_vacancies_url": employer.vacancies_url
-        }
-        save_data_to_database('employers', employers_data, database_name, params)
+    bar = progressbar.ProgressBar(
+        maxval=len(companies_ids),
+        widgets=['Загрузка компании: ', progressbar.Percentage(), ' ', progressbar.Bar(marker='█'), ' ',
+                 progressbar.ETA()]
+    )
+    for i, company_id in enumerate(companies_ids):
+        company = HeadHunterCompany(company_id)
+        companies_list.append(company.load_data())
         bar.update(i + 1)
     bar.finish()
 
-    bar = progressbar.ProgressBar(maxval=len(companies))
-    bar.start()
+    companies = [Company.from_company_cls(company) for company in companies_list]
+    bar = progressbar.ProgressBar(
+        maxval=len(companies),
+        widgets=['Сохранение данных: ', progressbar.Percentage(), ' ', progressbar.Bar(marker='█'), ' ',
+                 progressbar.ETA()]
+    )
     for i, company in enumerate(companies):
         companies_data = {
+            "employer_id": company.employer_id,
             "company_name": company.name,
             "company_description": company.description,
             "company_site_url": company.site_url,
@@ -65,8 +45,29 @@ def user_choice_employer(database_name: str, params: dict) -> None:
         bar.update(i + 1)
     bar.finish()
 
-    bar = progressbar.ProgressBar(maxval=len(vacancies))
-    bar.start()
+
+def get_and_save_vacancy_data(database_name: str, params: dict):
+    """ Функция получает и сохраняет данные о вакансиях с hh.ru в БД"""
+
+    vacancies_list = []
+
+    bar = progressbar.ProgressBar(
+        maxval=len(companies_ids),
+        widgets=['Загрузка вакансии: ', progressbar.Percentage(), ' ', progressbar.Bar(marker='█'), ' ',
+                 progressbar.ETA()]
+    )
+    for i, vacancies_id in enumerate(companies_ids):
+        vacancy = HeadHunterVacancy(vacancies_id)
+        vacancies_list.extend(vacancy.load_data())
+        bar.update(i + 1)
+    bar.finish()
+
+    vacancies = [Vacancy.from_vacancy_cls(vacancy) for vacancy in vacancies_list]
+    bar = progressbar.ProgressBar(
+        maxval=len(vacancies),
+        widgets=['Сохранение данных: ', progressbar.Percentage(), ' ', progressbar.Bar(marker='█'), ' ',
+                 progressbar.ETA()]
+    )
     for i, vacancy in enumerate(vacancies):
         vacancy_data = {
             "vacancy_name": vacancy.name,
@@ -83,7 +84,7 @@ def user_choice_employer(database_name: str, params: dict) -> None:
         bar.update(i + 1)
     bar.finish()
 
-    print(f"Вся информация сохранена в базу данных {database_name}\n")
+    print("Вся информация сохранена в базу данных hh\n")
 
 
 def create_database(database_name: str, params: dict) -> None:
@@ -100,23 +101,13 @@ def create_database(database_name: str, params: dict) -> None:
     conn.close()
 
     conn = psycopg2.connect(dbname=database_name, **params)
-    with conn.cursor() as cur:
-        cur.execute(
-            """
-            CREATE TABLE employers (
-                employer_id INTEGER,
-                employer_name TEXT NOT NULL,
-                employer_url TEXT,
-                alternate_url TEXT UNIQUE,
-                employer_vacancies_url TEXT
-            )
-        """)
 
     with conn.cursor() as cur:
         cur.execute(
             """
             CREATE TABLE companies (
-                company_name VARCHAR,
+                employer_id INTEGER PRIMARY KEY,
+                company_name VARCHAR NOT NULL,
                 company_description TEXT,
                 company_site_url TEXT,
                 open_vacancies INTEGER
@@ -132,7 +123,7 @@ def create_database(database_name: str, params: dict) -> None:
                 salary_from INTEGER,
                 salary_to INTEGER,
                 salary_currency VARCHAR,
-                employer_id INTEGER,
+                employer_id INTEGER REFERENCES companies(employer_id),
                 vacancy_area_name VARCHAR,
                 requirement TEXT,
                 responsibility TEXT

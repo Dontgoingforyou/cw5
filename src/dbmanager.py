@@ -16,7 +16,11 @@ class DBManager:
 
         self.cur.execute(
             """
-            SELECT company_name, open_vacancies FROM companies
+            SELECT c.company_name, COUNT(v.employer_id)
+            FROM companies c
+            JOIN vacancies v USING (employer_id)
+            GROUP BY c.company_name
+            ORDER BY COUNT DESC
             """
         )
         return self.cur.fetchall()
@@ -27,8 +31,11 @@ class DBManager:
 
         self.cur.execute(
             """
-            SELECT c.company_name, v.vacancy_name, v.salary_from, v.salary_to, v.alternate_url
-            FROM companies c, vacancies v
+            SELECT c.company_name, v.vacancy_name, v.salary_from, v.salary_to, v.salary_currency, v.alternate_url
+            FROM vacancies v
+            JOIN companies c USING (employer_id)
+            WHERE v.salary_from != 0 AND v.salary_from IS NOT NULL AND v.salary_to != 0 AND v.salary_to IS NOT NULL
+            ORDER BY v.salary_from DESC
             """
         )
         return self.cur.fetchall()
